@@ -1,13 +1,27 @@
 package com.example.cardcost.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
 @Builder
-public class CostRegisterDto {
+@JsonPropertyOrder({
+        "country_code",
+        "cost"
+})
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
+public class ClearingCostDto implements Serializable{
+    @JsonProperty(value = "country_code")
+    @Schema(type = "string", example = "eg")
     private String countryCode;
-    private Float cost;
+    @Schema(type = "decimal", example = "15")
+    private BigDecimal cost;
 }

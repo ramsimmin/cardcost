@@ -1,124 +1,83 @@
 package com.example.cardcost.service;
 
 import com.example.cardcost.dao.ClearingCostDao;
+import com.example.cardcost.dto.CardCostRequestDto;
 import com.example.cardcost.dto.ClearingCostDto;
 import com.example.cardcost.dto.ResponseDto;
 import com.example.cardcost.validation.CommonValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.List;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ClearingCostService {
+public class CardCostService {
 
-    private final ClearingCostDao clearingCostDao;
     private final CommonValidations commonValidations;
+    private final ClearingCostDao clearingCostDao;
+    private final BinTableApiService binTableApiService;
 
-    public ResponseEntity<?> saveCost(ClearingCostDto costRegisterDto) {
+
+    @Value("${fallback.country_code}")
+    String fallbackCountryCode;
+
+
+    public ResponseEntity<?> getCardCost(CardCostRequestDto cardCostRequestDto) {
         try {
-            ClearingCostDto clearingCostDto = clearingCostDao.findById(costRegisterDto.getCountryCode());
-            // Validate entry is already present
-            if (clearingCostDto != null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.builder().messages(
-                                Set.of("Cost entry already exists for country code [" + costRegisterDto.getCountryCode() + "]"))
-                        .error(true).build());
-            }
-
-            // Validate input
-            Set<String> errorMessages = commonValidations.validateCostRequestDto(costRegisterDto);
+            Set<String> errorMessages = commonValidations.validateCardNumber(cardCostRequestDto);
             if (!errorMessages.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.builder().messages(errorMessages).error(true).build());
             }
+            // Get clearing cost
+            ClearingCostDto result = calculateCost(cardCostRequestDto.getCardNumber().substring(0, 6));
 
-            // Save
-            clearingCostDao.save(costRegisterDto);
-            return ResponseEntity.ok(ResponseDto.builder().messages(Set.of("Successfully saved")).build());
-        } catch (Exception e) {
-            log.error("Unable to save cost matrix entry : {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseDto.builder().messages(Set.of("Unable to save cost matrix entry due to: " + e.getMessage())).error(true).build());
-        }
-    }
-
-    public ResponseEntity<?> getCostByCountryCode(String countryCode) {
-        try {
-            ClearingCostDto clearingCostDto = clearingCostDao.findById(countryCode.toLowerCase());
-
-            if (clearingCostDto == null) {
-                ResponseDto responseDto = ResponseDto.builder()
-                        .messages(Set.of("Cost entry for country code [" + countryCode + "] does not exist")).error(true).build();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDto);
+            if (result == null) {
+                // The country code is not registered in the cost matrix, return a default value
+                return getDefaultCost();
             }
-            return ResponseEntity.ok(clearingCostDto);
-        } catch (Exception e) {
-            log.error("Unable to get cost entry for country code {} : error {}", countryCode, e.getMessage());
-            ResponseDto responseDto = ResponseDto.builder()
-                    .messages(Set.of("Unable to get cost entry for country code [" + countryCode + "] ")).error(true).build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDto);
-        }
-    }
-
-
-    public ResponseEntity<?> getCosts() {
-        try {
-            List<ClearingCostDto> clearingCostDtoList = clearingCostDao.findAll();
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(clearingCostDtoList);
-        } catch (Exception e) {
-            log.error("Unable to get cost entries: error {}", e.getMessage());
-            ResponseDto responseDto = ResponseDto.builder()
-                    .messages(Set.of("Unable to get cost entries")).error(true).build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDto);
-        }
-    }
-
-    public ResponseEntity<?> updateCost(ClearingCostDto costRegisterDto) {
-        try {
-            ClearingCostDto clearingCostDto = clearingCostDao.findById(costRegisterDto.getCountryCode());
-            // Validate entry presence
-            if (clearingCostDto == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseDto.builder()
-                        .messages(Set.of("Cost entry for country code [" + costRegisterDto.getCountryCode() + "] does not exist")).error(true).build());
+            return ResponseEntity.ok(result);
+        } catch (HttpClientErrorException httpEx) {
+            log.error("Unable to calculate cost : {}", httpEx.getMessage());
+            if (httpEx.getStatusCode().value() == 404) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        ResponseDto.builder().messages(Set.of("Requested card number does not belong to a known issuer")).error(true).build());
             }
-
-            // Validate input
-            Set<String> errorMessages = commonValidations.validateCostRequestDto(costRegisterDto);
-            if (!errorMessages.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDto.builder().messages(errorMessages).error(true).build());
-            }
-
-            // Save
-            clearingCostDao.save(clearingCostDto);
-            return ResponseEntity.ok(ResponseDto.builder().messages(Set.of("Successfully updated")).build());
-        } catch (Exception e) {
-            log.error("Unable to update cost matrix entry : {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ResponseDto.builder().messages(Set.of("Unable to update cost matrix entry due to: " + e.getMessage())).error(true).build());
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+                    ResponseDto.builder().messages(Set.of("Unable to calculate cost due to: " + httpEx.getStatusCode() + " exception")).error(true).build());
+        } catch (Exception ex) {
+            log.error("Unable to calculate cost : {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+                    ResponseDto.builder().messages(Set.of("Unable to calculate cost")).error(true).build());
         }
     }
 
+    private ClearingCostDto calculateCost(String issuerIdentificationNumber) {
+        // Use the BINTable API to get the country
+        String countryCode = binTableApiService.getCountryCodeFromBinTableApi(issuerIdentificationNumber);
 
-    public ResponseEntity<?> deleteCost(String countryCode) {
-        try {
-            ClearingCostDto clearingCostDto = clearingCostDao.findById(countryCode);
-            if (clearingCostDto != null) {
-                clearingCostDao.delete(countryCode.toLowerCase());
-                return ResponseEntity.ok(ResponseDto.builder().messages(Set.of("Successfully deleted")).build());
-            } else {
-                ResponseDto responseDto = ResponseDto.builder().messages(Set.of("Cost entry for country code [" + countryCode + "] does not exist")).error(true).build();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDto);
-            }
-        } catch (Exception e) {
-            log.error("Unable to perform delete action for country code {} : error {}", countryCode, e.getMessage());
-            ResponseDto responseDto = ResponseDto.builder().messages(Set.of("Unable to delete cost entry for country code [" + countryCode + "] ")).error(true).build();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseDto);
-        }
+        // Look up the clearing cost matrix based on the result code
+        ClearingCostDto clearingCostDto = clearingCostDao.findById(countryCode.toLowerCase());
+
+        return clearingCostDto;
     }
+
+
+    private ResponseEntity<?> getDefaultCost() {
+        ClearingCostDto defaultCost = clearingCostDao.findById(fallbackCountryCode);
+        if (defaultCost == null) {
+            // The fallback entry 'other' does not exist in the cost matrix
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ResponseDto.builder().messages(Set.of("Default cost not found")).error(true).build());
+        }
+        return ResponseEntity.ok(defaultCost);
+    }
+
 
 }

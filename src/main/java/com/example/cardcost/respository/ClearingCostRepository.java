@@ -1,9 +1,14 @@
 package com.example.cardcost.respository;
 
-import com.example.cardcost.model.ClearingCostMatrix;
+import com.example.cardcost.model.ClearingCost;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface ClearingCostMatrixRepository extends CrudRepository<ClearingCostMatrix, String> {
+public interface ClearingCostRepository extends CrudRepository<ClearingCost, String> {
+
+    @Override
+    List<ClearingCost> findAll();
 }

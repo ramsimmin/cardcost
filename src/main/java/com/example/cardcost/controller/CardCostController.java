@@ -1,42 +1,31 @@
 package com.example.cardcost.controller;
 
-import com.example.cardcost.dto.ClearingCostDto;
-import com.example.cardcost.service.ClearingCostService;
+import com.example.cardcost.dto.CardCostRequestDto;
+import com.example.cardcost.openapi.CardCostControllerOpenApi;
+import com.example.cardcost.service.CardCostService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "api/cost-matrix")
+@RequestMapping(value = "api/payment-cards-cost")
 @RequiredArgsConstructor
-public class ClearingCostController {
+@Slf4j
+public class CardCostController implements CardCostControllerOpenApi {
 
-    private final ClearingCostService costMatrixService;
+    private final CardCostService cardCostService;
 
-    @GetMapping(value = "/{country_code}")
-    public ResponseEntity<?> getCost(@PathVariable(name = "country_code") String country_code) {
-        return costMatrixService.getCostByCountryCode(country_code);
+    @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Override
+    public ResponseEntity<?> getCardCost(@RequestBody CardCostRequestDto cardCostRequestDto) {
+        return cardCostService.getCardCost(cardCostRequestDto);
     }
 
-    @GetMapping
-    public ResponseEntity<?> getCosts() {
-        return costMatrixService.getCosts();
-    }
 
-    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> createCost(@RequestBody ClearingCostDto costRegisterDto) {
-        return costMatrixService.saveCost(costRegisterDto);
-    }
-
-    @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateCost(@RequestBody ClearingCostDto costRegisterDto) {
-        return costMatrixService.updateCost(costRegisterDto);
-    }
-
-    @DeleteMapping(value = "/delete/{country_code}")
-    public ResponseEntity<?> deleteCost(@PathVariable(name = "country_code") String country_code) {
-        return costMatrixService.deleteCost(country_code);
-    }
 
 }

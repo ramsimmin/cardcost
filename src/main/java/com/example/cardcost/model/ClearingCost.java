@@ -7,12 +7,14 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
-@RedisHash("Clearing_Cost_Matrix")
+import java.math.BigDecimal;
+
+@RedisHash("cost_matrix")
 @Builder
 @Getter
 @Setter
-public class ClearingCostMatrix {
+public class ClearingCost {
     @Id
     private String countryCode;
-    private Integer cost;
+    private BigDecimal cost;
 }

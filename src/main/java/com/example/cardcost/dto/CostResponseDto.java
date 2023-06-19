@@ -4,10 +4,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @Builder
-public class CostRegisterDto {
+public class CostResponseDto {
     private String countryCode;
-    private Integer cost;
+    private BigDecimal cost;
 }

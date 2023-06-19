@@ -1,11 +1,15 @@
 package com.example.cardcost.dao;
 
-import com.example.cardcost.model.ClearingCostMatrix;
+import com.example.cardcost.dto.ClearingCostDto;
 
-public interface ClearingCostMatrixDao {
-    void save(ClearingCostMatrix clearingCostMatrix);
+import java.util.List;
 
-    ClearingCostMatrix findById(String countryCode);
+public interface ClearingCostDao {
+    void save(ClearingCostDto clearingCostDto);
+
+    ClearingCostDto findById(String countryCode);
+
+    List<ClearingCostDto> findAll();
 
     void delete(String countryCode);
 }

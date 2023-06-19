@@ -1,35 +1,44 @@
 package com.example.cardcost.dao;
 
-import com.example.cardcost.model.ClearingCostMatrix;
-import com.example.cardcost.respository.ClearingCostMatrixRepository;
+import com.example.cardcost.dto.ClearingCostDto;
+import com.example.cardcost.mapper.ClearingCostMapper;
+import com.example.cardcost.model.ClearingCost;
+import com.example.cardcost.respository.ClearingCostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class ClearingCostMatrixDaoImpl implements ClearingCostMatrixDao {
+public class ClearingCostDaoImpl implements ClearingCostDao {
 
-    private final ClearingCostMatrixRepository clearingCostMatrixRepository;
+    private final ClearingCostRepository clearingCostRepository;
+    private final ClearingCostMapper costMapper;
 
     @Override
-    public void save(ClearingCostMatrix clearingCostMatrix) {
-        clearingCostMatrixRepository.save(clearingCostMatrix);
+    public void save(ClearingCostDto clearingCostDto) {
+        clearingCostRepository.save(costMapper.dtoToEntity(clearingCostDto));
     }
 
     @Override
-    public ClearingCostMatrix findById(String countryCode) {
-        Optional<ClearingCostMatrix> clearingCostMatrix = clearingCostMatrixRepository.findById(countryCode);
+    public ClearingCostDto findById(String countryCode) {
+        Optional<ClearingCost> clearingCostMatrix = clearingCostRepository.findById(countryCode);
         if (clearingCostMatrix.isPresent()) {
-            return clearingCostMatrix.get();
+            return costMapper.entityToDto(clearingCostMatrix.get());
         } else {
             return null;
         }
     }
 
     @Override
+    public List<ClearingCostDto> findAll() {
+        return costMapper.entitiesToDtos(clearingCostRepository.findAll());
+    }
+
+    @Override
     public void delete(String countryCode) {
-        clearingCostMatrixRepository.deleteById(countryCode);
+        clearingCostRepository.deleteById(countryCode);
     }
 }

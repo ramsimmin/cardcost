@@ -1,24 +1,32 @@
-# my-bank
+# CARD COST API
 
-A Spring Boot REST API that implements a simple banking system with Accounts and Transactions entities. 
-This project provides a basic API that allows users to create, read and update accounts, as well as perform transactions between them.
+A Spring Boot REST API that provides: 
+* Create Read Update Delete operations on a clearing cost matrix table
+* Retrieve of clearing cost for a given card number, utilizing the information provided by this public API https://bintable.com/get-api
 
-The project is built on top of the Spring Boot framework and uses a relational database to store the account and transaction data.
+The project is built on top of the Spring Boot framework and uses Redis to store the clearing cost matrix table data.
 In this project, the following endpoints are implemented:
 
-| HTTP Method | Path                            | Summary                                                                       |
-|-------------|---------------------------------|-------------------------------------------------------------------------------|
-| GET         | /api/accounts/list              | Retrieves a list of all account                                               |
-| POST        | /api/accounts/create            | Creates a new account                                                         |
-| PUT         | /api/accounts/update/{id}       | Updates an existing account                                                   |
-| GET         | /api/transactions/list          | Retrieves a list of all transactions                                          |
-| GET         | /api/transactions/listByAccount | Retrieves a transaction by source or target account id provided as parameters |
-| POST        | /api/transactions/create        | Creates a new transaction between two accounts                                |
+| HTTP Method | Path                      | Summary                                                |
+|-------------|---------------------------|--------------------------------------------------------|
+| POST        | /api/costs/create         | Create a clearing cost entry                           |
+| GET         | /api/costs                | List all clearing cost entries                         |
+| GET         | /api/costs/{country_code} | List a clearing cost entry given the iso2 country code |
+| PUT         | /api/costs/update         | Update a clearing cost entry                           |
+| DELETE      | /api/costs/delete         | Delete a clearing cost entry                           |
 
 
+## Redis
+Run a redis container 
 
-If you're using Postman, you can import the collection located under:
-`src/main/resources/my-bank-collection.postman_collection.json`
+`docker run --name=redis-server -p 6379:6379 -d redis:7.0.8`
+
+## Setup application.properties
+Update the api_key property under: `src/main/resources/application.properties` 
+
+api.bintable.api_key=<your_api_key>
+
+You can get one by signing up at: https://bintable.com/get-api 
 
 ## Build the application
 
@@ -30,34 +38,20 @@ You can run the application using your IDE or by executing:
 
 `mvn spring-boot:run`
 
-On application start up, the H2 database will be created as file under the user's directory. 
-You can change the location of the file as well as the database credentials configured in `src/main/resources/application.properties`.  
+## Using docker
 
-Liquibase has been used for initial DB schema creation as well as for some initial data entry.
+Build the app image   
+`docker build -t card-cost-app . `
 
-`spring.datasource.url=jdbc:h2:~/my-bank-db`  
-`spring.datasource.username=sa`  
-`spring.datasource.password=sa`
+Run the container  
+`docker run -p 8086:8086 -d -e SPRING_DATA_REDIS_HOST='host.docker.internal' card-cost-app`  
 
-You can view the database while the application is running,  by accessing: 
-http://localhost:8080/h2-console
+or by overwriting the api_key as well
 
+`docker run -p 8086:8086 -d -e SPRING_DATA_REDIS_HOST='host.docker.internal' -e API_BINTABLE_API_KEY='df39ee4320aa8221067864eda1c0f2844f901336' card-cost-app`
 
 
 ## Open Api
 Detailed information about the rest endpoints are documented with swagger. You can access the documentation while the application is running:
-http://localhost:8080/openapi/swagger-ui/index.html
-
-
-## Tests
-The project also includes several tests for the API endpoints and database integration. JUnit and Mockito frameworks have been used for unit testing.
-Tests run on their own H2 database file configured in: `src/test/resources/application.properties`
-
-## Using docker 
-
-Build the app image   
-`docker build -t my-bank-app . `
-
-Run the container  
-`docker run -p 8080:8080 -d my-bank-app`
+http://localhost:8086/openapi/swagger-ui/index.html  
 

@@ -1,8 +1,15 @@
 # CARD COST API
 
 A Spring Boot REST API that provides: 
-* Create Read Update Delete operations on a clearing cost matrix table
-* Retrieve of clearing cost for a given card number, utilizing the information provided by this public API https://bintable.com/get-api
+1. Create Read Update Delete operations on a clearing cost matrix table of the following format
+
+| Card issuing country | Clearing Cost (USD) | 
+|----------------------|---------------------|
+| us                   | 5                   | 
+| gr                   | 10                  | 
+| others               | 15                  |
+
+2. Retrieve of clearing cost for a given card number, utilizing the information provided by this public API https://bintable.com/get-api
 
 The project is built on top of the Spring Boot framework and uses Redis to store the clearing cost matrix table data.
 In this project, the following endpoints are implemented:
@@ -14,7 +21,11 @@ In this project, the following endpoints are implemented:
 | GET         | /api/costs/{country_code} | List a clearing cost entry given the iso2 country code |
 | PUT         | /api/costs/update         | Update a clearing cost entry                           |
 | DELETE      | /api/costs/delete         | Delete a clearing cost entry                           |
+| POST        | /api/payment-cards-cost   | Retrieve the cost for a given card number              |
 
+
+Detailed API documentation can be found here: 
+https://ramsimmin.github.io/cardcost/
 
 ## Redis
 Run a redis container 
@@ -52,6 +63,8 @@ or by overwriting the api_key as well
 
 
 ## Open Api
-Detailed information about the rest endpoints are documented with swagger. You can access the documentation while the application is running:
-http://localhost:8086/openapi/swagger-ui/index.html  
+Detailed information about the rest endpoints are documented with swagger. You can access the documentation deployed in github pages
+https://ramsimmin.github.io/cardcost/
 
+or by accessing the following url while the application is running:
+http://localhost:8086/openapi/swagger-ui/index.html  

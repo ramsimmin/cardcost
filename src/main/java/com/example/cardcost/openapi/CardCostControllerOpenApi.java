@@ -25,9 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 )
 public interface CardCostControllerOpenApi {
 
-
-
-
     @Operation(summary = "Get the card cost")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation",
@@ -48,6 +45,30 @@ public interface CardCostControllerOpenApi {
                                                     }
                                                     """),
 
+                            }
+                    )}),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(name = "Card number not provided",
+                                            value = """
+                                                    {
+                                                        "messages": [
+                                                            "Card number must be provided"
+                                                        ],
+                                                        "error": true
+                                                    }
+                                                    """),
+                                    @ExampleObject(name = "Invalid card number",
+                                            value = """
+                                                    {
+                                                        "messages": [
+                                                            "Card number must contain numbers from 0 to 9 and have a length between 9 and 18"
+                                                        ],
+                                                        "error": true
+                                                    }
+                                                    """),
                             }
                     )}),
             @ApiResponse(responseCode = "503", description = "Service unavailable",

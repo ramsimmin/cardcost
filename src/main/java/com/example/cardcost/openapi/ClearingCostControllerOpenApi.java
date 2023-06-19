@@ -98,15 +98,26 @@ public interface ClearingCostControllerOpenApi {
             @ApiResponse(responseCode = "400", description = "Bad Request",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(ref = "#/components/schemas/ResponseDto"),
-                            examples = @ExampleObject(name = "Bad request", value = """
-                                    
+                            examples = {@ExampleObject(name = "Clearing cost entry already exists", value = """
+                                                                        
                                     {
                                         "messages": [
                                             "Cost entry already exists for country code [country_code]"
                                         ],
                                         "error": true
                                     }
-                                    """)
+                                    """),
+                                    @ExampleObject(name = "Missing values", value = """
+                                                                                
+                                            {
+                                                "messages": [
+                                                    "Country code must be provided",
+                                                    "Cost must be greater than or equal 0"
+                                                ],
+                                                "error": true
+                                            }
+                                            """)
+                            }
 
                     )})
     })
@@ -128,10 +139,26 @@ public interface ClearingCostControllerOpenApi {
                                     """)
                     )}
             ),
+            @ApiResponse(responseCode = "400", description = "Bad Request",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(ref = "#/components/schemas/ResponseDto"),
+                            examples =
+                                    @ExampleObject(name = "Missing values", value = """
+                                                                                
+                                            {
+                                                "messages": [
+                                                    "Country code must be provided",
+                                                    "Cost must be greater than or equal 0"
+                                                ],
+                                                "error": true
+                                            }
+                                            """)
+
+                    )}),
             @ApiResponse(responseCode = "404", description = "Not Found",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(ref = "#/components/schemas/ResponseDto"),
-                            examples = @ExampleObject(name = "Bad request", value = """
+                            examples = @ExampleObject(name = "Clearing cost entry does not exist", value = """
                                     
                                     {
                                         "messages": [
@@ -163,7 +190,7 @@ public interface ClearingCostControllerOpenApi {
             @ApiResponse(responseCode = "404", description = "Not Found",
                     content = {@Content(mediaType = "application/json",
                             schema = @Schema(ref = "#/components/schemas/ResponseDto"),
-                            examples = @ExampleObject(name = "Bad request", value = """
+                            examples = @ExampleObject(name = "Clearing cost entry does not exist", value = """
                                     
                                     {
                                         "messages": [

@@ -39,7 +39,7 @@ public class CardCostService {
             ClearingCostDto result = calculateCost(cardCostRequestDto.getCardNumber().substring(0, 6));
 
             if (result == null) {
-                // The country code is not registered in the cost matrix, return a default value
+                // The country code is not registered in the cost matrix, return the value for "other"
                 return getDefaultCost();
             }
             return ResponseEntity.ok(result);

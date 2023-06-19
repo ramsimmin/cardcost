@@ -4,13 +4,19 @@ A Spring Boot REST API that provides:
 1. Create Read Update Delete operations on a clearing cost matrix table of the following format
 
 | Card issuing country | Clearing Cost (USD) | 
-|----------------------|---------------------|
-| us                   | 5                   | 
-| gr                   | 10                  | 
-| others               | 15                  |
+|--------------------|---------------------|
+| us                 | 5                   | 
+| gr                 | 10                  | 
+| other              | 15                  |
 
-2. Retrieve of clearing cost for a given card number, utilizing the information provided by this public API https://bintable.com/get-api
+2. Clearing cost calculation for a given card number, utilizing the information provided by this public API https://bintable.com/get-api  
 
+In case the BINTable Api responds with a country code, that is not registered in the clearing cost matrix, 
+the fallback country code 'other' will be used for the cost calculation.  
+The value for the fallback country code as well as the fallback cost, can be configured in application.properties file.
+
+
+## Endpoints
 The project is built on top of the Spring Boot framework and uses Redis to store the clearing cost matrix table data.
 In this project, the following endpoints are implemented:
 
@@ -37,7 +43,8 @@ Update the api_key property under: `src/main/resources/application.properties`
 
 api.bintable.api_key=<your_api_key>
 
-You can get one by signing up at: https://bintable.com/get-api 
+You can get one by signing up at: https://bintable.com/get-api or use the following one (balance sufficiency is not guaranteed)
+`df39ee4320aa8221067864eda1c0f2844f901336`
 
 ## Build the application
 

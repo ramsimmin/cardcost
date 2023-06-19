@@ -26,7 +26,9 @@ public class BinTableApiService {
         RestTemplate restTemplate = new RestTemplate();
 
         BinApiResponseDto response = restTemplate.getForObject(url, BinApiResponseDto.class, map);
-        return response.getData().getCountry().getCode();
+        if (response == null)
+            throw new RuntimeException("Response received from BinTable api is null");
+        return response.getData().getCountry().getCode().toLowerCase();
 
     }
 }

@@ -1,406 +1,468 @@
 {
-    "openapi": "3.0.1",
-    "info": {
-        "title": "CARD COST API",
-        "version": "0.0"
-    },
-    "servers": [
-        {
-            "url": "http://localhost:8086",
-            "description": "Generated server url"
-        }
-    ],
-    "tags": [
-        {
-            "name": "Card Cost Controller",
-            "description": "Retrieve the clearing cost for a given card number"
-        },
-        {
-            "name": "Clearing Cost Matrix Controller",
-            "description": "Api to create/ read/ update /delete clearing card costs"
-        }
-    ],
-    "paths": {
-        "/api/costs/update": {
-            "put": {
-                "tags": [
-                    "Clearing Cost Matrix Controller"
-                ],
-                "summary": "Update a clearing cost matrix entry",
-                "operationId": "updateCost",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ClearingCostDto"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "example": {
-                                    "messages": [
-                                        "Successfully updated"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "examples": {
-                                    "Bad request": {
-                                        "description": "Bad request",
-                                        "value": {
-                                            "messages": [
-                                                "Cost entry for country code [country_code] does not exist"
-                                            ],
-                                            "error": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/payment-cards-cost": {
-            "post": {
-                "tags": [
-                    "Card Cost Controller"
-                ],
-                "summary": "Get the card cost",
-                "operationId": "getCardCost",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CardCostRequestDto"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "503": {
-                        "description": "Service unavailable",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "examples": {
-                                    "Api not available": {
-                                        "description": "Api not available",
-                                        "value": {
-                                            "messages": [
-                                                "Unable to calculate cost"
-                                            ],
-                                            "error": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ClearingCostDto"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "examples": {
-                                    "Issuer Not Found": {
-                                        "description": "Issuer Not Found",
-                                        "value": {
-                                            "messages": [
-                                                "Requested card number does not belong to a known issuer"
-                                            ],
-                                            "error": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/costs/create": {
-            "post": {
-                "tags": [
-                    "Clearing Cost Matrix Controller"
-                ],
-                "summary": "Create a clearing cost matrix entry",
-                "operationId": "createCost",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ClearingCostDto"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "400": {
-                        "description": "Bad Request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "examples": {
-                                    "Bad request": {
-                                        "description": "Bad request",
-                                        "value": {
-                                            "messages": [
-                                                "Cost entry already exists for country code [country_code]"
-                                            ],
-                                            "error": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "example": {
-                                    "messages": [
-                                        "Successfully saved"
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/costs": {
-            "get": {
-                "tags": [
-                    "Clearing Cost Matrix Controller"
-                ],
-                "summary": "Get all clearing costs",
-                "operationId": "getCosts",
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "string"
-                                },
-                                "examples": {
-                                    "List of costs": {
-                                        "description": "List of costs",
-                                        "value": [
-                                            {
-                                                "country_code": "gr",
-                                                "cost": 15
-                                            },
-                                            {
-                                                "country_code": "uk",
-                                                "cost": 12.5
-                                            },
-                                            {
-                                                "country_code": "other",
-                                                "cost": 20
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/costs/{country_code}": {
-            "get": {
-                "tags": [
-                    "Clearing Cost Matrix Controller"
-                ],
-                "summary": "Get the clearing cost for a given country_code",
-                "operationId": "getCost",
-                "parameters": [
-                    {
-                        "name": "country_code",
-                        "in": "path",
-                        "description": "The iso2 country code",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "gr"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ClearingCostDto"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "examples": {
-                                    "Issuer Not Found": {
-                                        "description": "Issuer Not Found",
-                                        "value": {
-                                            "messages": [
-                                                "Cost entry for country code [countryCodeParam] does not exist"
-                                            ],
-                                            "error": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/costs/delete/{country_code}": {
-            "delete": {
-                "tags": [
-                    "Clearing Cost Matrix Controller"
-                ],
-                "summary": "Delete a clearing cost matrix entry",
-                "operationId": "deleteCost",
-                "parameters": [
-                    {
-                        "name": "country_code",
-                        "in": "path",
-                        "description": "The iso2 country code",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "gr"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "example": {
-                                    "messages": [
-                                        "Successfully deleted"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ResponseDto"
-                                },
-                                "examples": {
-                                    "Bad request": {
-                                        "description": "Bad request",
-                                        "value": {
-                                            "messages": [
-                                                "Cost entry for country code [country_code] does not exist"
-                                            ],
-                                            "error": true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "components": {
-        "schemas": {
-            "ClearingCostDto": {
-                "type": "object",
-                "properties": {
-                    "country_code": {
-                        "type": "string",
-                        "example": "eg"
-                    },
-                    "cost": {
-                        "type": "number",
-                        "example": 15
-                    }
-                }
-            },
-            "CardCostRequestDto": {
-                "type": "object",
-                "properties": {
-                    "card_number": {
-                        "type": "string",
-                        "example": "403244111"
-                    }
-                }
-            },
-            "ResponseDto": {
-                "type": "object",
-                "properties": {
-                    "messages": {
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "error": {
-                        "type": "boolean"
-                    }
-                }
-            }
-        }
+  "openapi": "3.0.1",
+  "info": {
+    "title": "CARD COST API",
+    "version": "0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8086",
+      "description": "Generated server url"
     }
+  ],
+  "tags": [
+    {
+      "name": "Card Cost Controller",
+      "description": "Retrieve the clearing cost for a given card number"
+    },
+    {
+      "name": "Clearing Cost Matrix Controller",
+      "description": "Api to create/ read/ update /delete clearing card costs"
+    }
+  ],
+  "paths": {
+    "/api/costs/update": {
+      "put": {
+        "tags": [
+          "Clearing Cost Matrix Controller"
+        ],
+        "summary": "Update a clearing cost matrix entry",
+        "operationId": "updateCost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClearingCostDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "example": {
+                  "messages": [
+                    "Successfully updated"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Clearing cost entry does not exist": {
+                    "description": "Clearing cost entry does not exist",
+                    "value": {
+                      "messages": [
+                        "Cost entry for country code [country_code] does not exist"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Missing values": {
+                    "description": "Missing values",
+                    "value": {
+                      "messages": [
+                        "Country code must be provided",
+                        "Cost must be greater than or equal 0"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payment-cards-cost": {
+      "post": {
+        "tags": [
+          "Card Cost Controller"
+        ],
+        "summary": "Get the card cost",
+        "operationId": "getCardCost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardCostRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Card number not provided": {
+                    "description": "Card number not provided",
+                    "value": {
+                      "messages": [
+                        "Card number must be provided"
+                      ],
+                      "error": true
+                    }
+                  },
+                  "Invalid card number": {
+                    "description": "Invalid card number",
+                    "value": {
+                      "messages": [
+                        "Card number must contain numbers from 0 to 9 and have a length between 9 and 18"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearingCostDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Issuer Not Found": {
+                    "description": "Issuer Not Found",
+                    "value": {
+                      "messages": [
+                        "Requested card number does not belong to a known issuer"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Api not available": {
+                    "description": "Api not available",
+                    "value": {
+                      "messages": [
+                        "Unable to calculate cost"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/costs/create": {
+      "post": {
+        "tags": [
+          "Clearing Cost Matrix Controller"
+        ],
+        "summary": "Create a clearing cost matrix entry",
+        "operationId": "createCost",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClearingCostDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "example": {
+                  "messages": [
+                    "Successfully saved"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Clearing cost entry already exists": {
+                    "description": "Clearing cost entry already exists",
+                    "value": {
+                      "messages": [
+                        "Cost entry already exists for country code [country_code]"
+                      ],
+                      "error": true
+                    }
+                  },
+                  "Missing values": {
+                    "description": "Missing values",
+                    "value": {
+                      "messages": [
+                        "Country code must be provided",
+                        "Cost must be greater than or equal 0"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/costs": {
+      "get": {
+        "tags": [
+          "Clearing Cost Matrix Controller"
+        ],
+        "summary": "Get all clearing costs",
+        "operationId": "getCosts",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "List of costs": {
+                    "description": "List of costs",
+                    "value": [
+                      {
+                        "country_code": "gr",
+                        "cost": 15
+                      },
+                      {
+                        "country_code": "uk",
+                        "cost": 12.5
+                      },
+                      {
+                        "country_code": "other",
+                        "cost": 20
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/costs/{country_code}": {
+      "get": {
+        "tags": [
+          "Clearing Cost Matrix Controller"
+        ],
+        "summary": "Get the clearing cost for a given country_code",
+        "operationId": "getCost",
+        "parameters": [
+          {
+            "name": "country_code",
+            "in": "path",
+            "description": "The iso2 country code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "gr"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClearingCostDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Issuer Not Found": {
+                    "description": "Issuer Not Found",
+                    "value": {
+                      "messages": [
+                        "Cost entry for country code [countryCodeParam] does not exist"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/costs/delete/{country_code}": {
+      "delete": {
+        "tags": [
+          "Clearing Cost Matrix Controller"
+        ],
+        "summary": "Delete a clearing cost matrix entry",
+        "operationId": "deleteCost",
+        "parameters": [
+          {
+            "name": "country_code",
+            "in": "path",
+            "description": "The iso2 country code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "gr"
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "examples": {
+                  "Clearing cost entry does not exist": {
+                    "description": "Clearing cost entry does not exist",
+                    "value": {
+                      "messages": [
+                        "Cost entry for country code [country_code] does not exist"
+                      ],
+                      "error": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseDto"
+                },
+                "example": {
+                  "messages": [
+                    "Successfully deleted"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClearingCostDto": {
+        "type": "object",
+        "properties": {
+          "country_code": {
+            "type": "string",
+            "example": "eg"
+          },
+          "cost": {
+            "type": "number",
+            "example": 15
+          }
+        }
+      },
+      "CardCostRequestDto": {
+        "type": "object",
+        "properties": {
+          "card_number": {
+            "type": "string",
+            "example": "403244111"
+          }
+        }
+      },
+      "ResponseDto": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
 }

@@ -4,25 +4,22 @@ import com.example.cardcost.dao.ClearingCostDao;
 import com.example.cardcost.dto.ClearingCostDto;
 import com.example.cardcost.dto.ResponseDto;
 import com.example.cardcost.respository.ClearingCostRepository;
+import com.example.cardcost.utils.FallbackCostInitializer;
 import com.example.cardcost.validation.CommonValidations;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 
 @ExtendWith(SpringExtension.class)
@@ -32,12 +29,21 @@ class ClearingCostServiceTest {
 
     @Autowired
     ClearingCostDao clearingCostDao;
+
     @Autowired
     CommonValidations commonValidations;
+
     @Autowired
     ClearingCostService clearingCostService;
+
     @Autowired
-    private ClearingCostRepository clearingCostRepository;
+    ClearingCostRepository clearingCostRepository;
+
+    @Autowired
+    CacheManager cacheManager;
+
+    @MockBean
+    FallbackCostInitializer fallbackCostInitializer;
 
     @BeforeAll
     public void uploadCosts() {
@@ -60,7 +66,7 @@ class ClearingCostServiceTest {
 
     @Test
     void saveValidCost() {
-        ClearingCostDto clearingCostDto = ClearingCostDto.builder().countryCode("uk").cost(new BigDecimal(12.5d)).build();
+        ClearingCostDto clearingCostDto = ClearingCostDto.builder().countryCode("uk").cost(new BigDecimal("12.5")).build();
         ResponseEntity<?> responseEntity = clearingCostService.saveCost(clearingCostDto);
         ResponseDto expectedResponseDto = ResponseDto.builder().messages(Set.of("Successfully saved")).build();
         Assertions.assertAll(
@@ -104,7 +110,11 @@ class ClearingCostServiceTest {
         List<ClearingCostDto> actualList = (List<ClearingCostDto>) responseEntity.getBody();
         Assertions.assertAll(
                 () -> Assertions.assertEquals(HttpStatusCode.valueOf(200), responseEntity.getStatusCode(), "Status code must be 200"),
-                () -> Assertions.assertTrue(actualList.containsAll(expectedList), "Response is not the expected one")
+                () -> Assertions.assertNotEquals(null, actualList, "Actual list must not be null"),
+                () -> {
+                    assert actualList != null;
+                    Assertions.assertTrue(actualList.containsAll(expectedList), "Response is not the expected one");
+                }
         );
     }
 
@@ -144,5 +154,7 @@ class ClearingCostServiceTest {
     @AfterAll
     public void cleanUp() {
         clearingCostRepository.deleteAll();
+        Objects.requireNonNull(cacheManager.getCache("clearing-costs-cache")).invalidate();
+
     }
 }

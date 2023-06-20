@@ -4,8 +4,8 @@ import com.example.cardcost.dao.ClearingCostDao;
 import com.example.cardcost.dto.CardCostRequestDto;
 import com.example.cardcost.dto.ClearingCostDto;
 import com.example.cardcost.dto.ResponseDto;
-import com.example.cardcost.model.ClearingCost;
 import com.example.cardcost.respository.ClearingCostRepository;
+import com.example.cardcost.utils.FallbackCostInitializer;
 import com.example.cardcost.validation.CommonValidations;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +21,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
-
-import static java.util.Optional.ofNullable;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -40,10 +36,19 @@ class CardCostServiceTest {
     ClearingCostDao clearingCostDao;
 
     @Autowired
+    ClearingCostRepository clearingCostRepository;
+
+    @Autowired
     CardCostService cardCostService;
 
     @MockBean
     BinTableApiService binTableApiService;
+
+    @Autowired
+    CacheManager cacheManager;
+
+    @MockBean
+    FallbackCostInitializer fallbackCostInitializer;
 
     @BeforeAll
     public void uploadCosts() {
@@ -103,7 +108,7 @@ class CardCostServiceTest {
                 ResponseDto.builder().messages(Set.of("Unable to calculate cost due to: 401 UNAUTHORIZED exception")).error(true).build();
 
         Assertions.assertAll(
-                () -> Assertions.assertEquals(HttpStatusCode.valueOf(500), responseEntity.getStatusCode(), "Status code must be 500"),
+                () -> Assertions.assertEquals(HttpStatusCode.valueOf(503), responseEntity.getStatusCode(), "Status code must be 503"),
                 () -> Assertions.assertEquals(expectedResponseDto, responseEntity.getBody(), "Response entity is not the expected one")
         );
     }
@@ -111,8 +116,8 @@ class CardCostServiceTest {
 
     @AfterAll
     public void cleanUp() {
-        clearingCostDao.delete("eg");
-        clearingCostDao.delete("gr");
+        clearingCostRepository.deleteAll();
+        Objects.requireNonNull(cacheManager.getCache("clearing-costs-cache")).invalidate();
     }
 
 

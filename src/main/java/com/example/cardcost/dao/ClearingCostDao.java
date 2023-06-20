@@ -1,11 +1,15 @@
 package com.example.cardcost.dao;
 
 import com.example.cardcost.dto.ClearingCostDto;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
 public interface ClearingCostDao {
-    void save(ClearingCostDto clearingCostDto);
+
+    ClearingCostDto save(ClearingCostDto clearingCostDto);
 
     ClearingCostDto findById(String countryCode);
 

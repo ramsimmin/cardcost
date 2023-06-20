@@ -2,6 +2,7 @@ package com.example.cardcost.validation;
 
 import com.example.cardcost.dto.CardCostRequestDto;
 import com.example.cardcost.dto.ClearingCostDto;
+import com.example.cardcost.utils.FallbackCostInitializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
@@ -21,6 +23,9 @@ class CommonValidationsTest {
 
     @Autowired
     CommonValidations commonValidations;
+
+    @MockBean
+    FallbackCostInitializer fallbackCostInitializer;
 
     @Test
     void validateCostRequestDtoNullValues() {
@@ -48,7 +53,7 @@ class CommonValidationsTest {
 
     @Test
     void validateCostRequestDtoCostNegativeValue() {
-        ClearingCostDto clearingCostDto = ClearingCostDto.builder().countryCode("es").cost(new BigDecimal(-10.54d)).build();
+        ClearingCostDto clearingCostDto = ClearingCostDto.builder().countryCode("es").cost(BigDecimal.valueOf(-10.54d)).build();
         Set<String> errorMessages = commonValidations.validateCostRequestDto(clearingCostDto);
 
         Assertions.assertAll(
